@@ -27,10 +27,12 @@ import MuseScore 1.0
 MuseScore {
       version: "0.1"
       description: "This plugin adds playback for quarter tone accidentals"
-      menuPath: "Plugins.Notes.Quarter Tone Playback"
+      menuPath: "Plugins.Playback.Quarter Tone Playback"
 
       // accidental configuration
       property var accConfig
+
+      property bool resetTuning: false
 
       // if nothing is selected process whole score
       property bool processAll: false
@@ -264,6 +266,19 @@ MuseScore {
                               onClicked: {
                                     configWin.visible = false;
                                     getTuningValues();
+                                    resetTuning = false;
+                                    curScore.startCmd();
+                                    quarterToneTuning();
+                                    curScore.endCmd();
+                                    Qt.quit();
+                              }
+                        }
+                        Button {
+                              text: qsTr("Reset Tuning")
+                              onClicked: {
+                                    configWin.visible = false;
+                                    getTuningValues();
+                                    resetTuning = true;
                                     curScore.startCmd();
                                     quarterToneTuning();
                                     curScore.endCmd();
@@ -406,6 +421,10 @@ MuseScore {
 	      // remember for rest of measure
 	      curTuningArray[noteClass] = tuning;
 	    }
+
+            // if in reset-mode set tuning = 0
+            if (resetTuning)
+                  tuning = 0;
 
 	    // set note.tuning if it differs from what we calculated
 	    if (note.tuning != tuning) {
