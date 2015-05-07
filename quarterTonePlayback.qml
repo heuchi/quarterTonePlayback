@@ -1,7 +1,7 @@
 //==============================================
 //  play back quarter tone accidentals
 //
-//  Copyright (C)2012-2014 Jörn Eichler (heuchi) 
+//  Copyright (C)2015 Jörn Eichler (heuchi)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,11 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //==============================================
 
-import QtQuick 2.0
+import QtQuick 2.2
+import QtQuick.Controls 1.3
+import QtQuick.Layouts 1.1
+import QtQuick.Window 2.2
+import Qt.labs.settings 1.0
 import MuseScore 1.0
 
 MuseScore {
@@ -26,10 +30,272 @@ MuseScore {
       menuPath: "Plugins.Notes.Quarter Tone Playback"
 
       // accidental configuration
-      property var accConfig;
+      property var accConfig
 
       // if nothing is selected process whole score
       property bool processAll: false
+
+      // configuration dialog
+
+      Window {
+            id: configWin
+            visible: true
+            title: qsTr("Quarter Tone Playback")
+            modality: Qt.ApplicationModal // behave like a dialog
+            color: "lightgrey"
+
+            // center on screen
+            width: mainLayout.childrenRect.width
+            height: mainLayout.childrenRect.height
+            x: Screen.width / 2  - width / 2
+            y: Screen.height / 2 - height / 2
+
+            ColumnLayout {
+                  id: mainLayout
+                  spacing: 15
+
+                  Label {
+                        text: " "+qsTr("Configure tuning values")+" "
+                        font.pointSize: 18
+                        style: Text.Raised
+                  }
+
+                  Label {
+                        text: qsTr("Set tuning values in cents (100 ct = half tone):\n"+
+                                   "   -50 ct means a quarter tone down\n"+
+                                   "   +50 ct means a quarter tone up\n\n"+
+                                   "Accidentals are remembered until\n"+
+                                   "the end of the measure")
+                        anchors {
+                              left: mainLayout.left
+                              leftMargin:   10
+                        }
+                  }
+
+                  GroupBox {
+                        Layout.fillWidth: true
+                        GridLayout{
+                              columns: 4
+                              // row 1
+                              ColumnLayout {
+                                    id: colMirroredFlatTwo
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue281  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colMirroredFlatTwo.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneMirroredFlatTwo
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: -150
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colMirroredFlat
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue280  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colMirroredFlat.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneMirroredFlat
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: -50
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colSharpSlash
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue282  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colSharpSlash.top
+                                                topMargin: -0.3 * contentHeight - 4
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneSharpSlash
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: 50
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colSharpSlashFour
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue283  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colSharpSlashFour.top
+                                                topMargin: -0.3 * contentHeight - 4
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneSharpSlashFour
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: 150
+                                          Layout.fillWidth: true
+                                    }
+                              }
+
+                              // row 2
+                              ColumnLayout {
+                                    id: colFlatArrowDown
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue271  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colFlatArrowDown.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneFlatArrowDown
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: -150
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colFlatArrowUp
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue270  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colFlatArrowUp.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneFlatArrowUp
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: -50
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colSharpArrowDown
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue275  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colSharpArrowDown.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneSharpArrowDown
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: 50
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                              ColumnLayout {
+                                    id: colSharpArrowUp
+                                    spacing: 1
+                                    Label {
+                                          text: "  \ue274  "
+                                          font.family: "bravura"
+                                          font.pointSize: 28
+                                          Layout.maximumHeight: 0.4 * contentHeight
+                                          anchors {
+                                                top: colSharpArrowUp.top
+                                                topMargin: -0.3 * contentHeight
+                                          }
+                                    }
+                                    SpinBox {
+                                          id: tuneSharpArrowUp
+                                          horizontalAlignment: Qt.AlignRight
+                                          minimumValue: -199
+                                          maximumValue:  199
+                                          value: 150
+                                          Layout.fillWidth: true
+                                    }
+                              }
+                        }
+                  }
+
+                  RowLayout {
+                        Button {
+                              text: qsTr("Apply")
+                              onClicked: {
+                                    configWin.visible = false;
+                                    getTuningValues();
+                                    curScore.startCmd();
+                                    quarterToneTuning();
+                                    curScore.endCmd();
+                                    Qt.quit();
+                              }
+                        }
+                        Label {
+                              Layout.fillWidth: true
+                        }
+                        Button {
+                              text: qsTr("Cancel")
+                              onClicked: {
+                                    configWin.visible = false;
+                                    Qt.quit();
+                              }
+                        }
+                  }
+            }
+      }
+
+      // remember settings
+      Settings {
+            category: "QuarterTonePlaybackPlugin"
+            property alias tuneMirroredFlatTwo: tuneMirroredFlatTwo.value
+            property alias tuneMirroredFlat:    tuneMirroredFlat.value
+            property alias tuneSharpSlash:      tuneSharpSlash.value
+            property alias tuneSharpSlashFour:  tuneSharpSlashFour.value
+            property alias tuneFlatArrowDown:   tuneFlatArrowDown.value
+            property alias tuneFlatArrowUp:     tuneFlatArrowUp.value
+            property alias tuneSharpArrowDown:  tuneSharpArrowDown.value
+            property alias tuneSharpArrowUp:    tuneSharpArrowUp.value
+      }
 
       // function iniConfig
 
@@ -41,10 +307,20 @@ MuseScore {
             accConfig[Accidental.NATURAL] = 0;
             accConfig[Accidental.SHARP]   = 0;
             accConfig[Accidental.SHARP2]  = 0;
+      }
 
-            // standard configuration for quarter tone accidentals
-            accConfig[Accidental.MIRRORED_FLAT] = -50;
-            accConfig[Accidental.SHARP_SLASH]   =  50;
+      // function getTuningValues
+
+      function getTuningValues() {
+            accConfig[Accidental.MIRRORED_FLAT2] = tuneMirroredFlatTwo.value;
+            accConfig[Accidental.MIRRORED_FLAT]  = tuneMirroredFlat.value;
+            accConfig[Accidental.SHARP_SLASH]    = tuneSharpSlash.value;
+            accConfig[Accidental.SHARP_SLASH4]   = tuneSharpSlashFour.value;
+
+            accConfig[Accidental.FLAT_ARROW_DOWN]  = tuneFlatArrowDown.value;
+            accConfig[Accidental.FLAT_ARROW_UP]    = tuneFlatArrowUp.value;
+            accConfig[Accidental.SHARP_ARROW_DOWN] = tuneSharpArrowDown.value;
+            accConfig[Accidental.SHARP_ARROW_UP]   = tuneSharpArrowUp.value;
       }
 
       // function tpcName
@@ -205,11 +481,6 @@ MuseScore {
       }
 
       function quarterToneTuning() {
-             if (typeof curScore === 'undefined' || curScore == null) {
-                   console.log("error: no score!");	     
-                   Qt.quit();
-             }
-
             // find selection
             var startStaff;
             var endStaff;
@@ -259,7 +530,12 @@ MuseScore {
       }
 
       onRun: { 
+            if (typeof curScore === 'undefined' || curScore == null) {
+                  console.log("error: no score!");
+                  configWin.visible = false;
+                  Qt.quit();
+            }
+
             iniConfig();
-            quarterToneTuning();
       }
 }
